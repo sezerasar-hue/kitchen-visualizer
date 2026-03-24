@@ -5,3 +5,640 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kitchen Visualizer – Kol Marble & Granite</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --dark: #0F0F0F;
+    --dark2: #1A1A1A;
+    --dark3: #242424;
+    --border: rgba(201,168,76,0.2);
+    --text: #F0EDE8;
+    --text-muted: #8A8480;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    padding: 60px 20px 40px;
+    position: relative;
+  }
+  header::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 1px;
+    background: var(--gold);
+    margin: 24px auto 0;
+  }
+  .logo-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(32px, 5vw, 52px);
+    font-weight: 300;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+  h1 span { color: var(--gold); font-weight: 600; }
+  .subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 10px;
+    letter-spacing: 0.5px;
+  }
+
+  /* MAIN LAYOUT */
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* STEPS */
+  .steps {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 48px;
+  }
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    transition: color 0.3s;
+  }
+  .step.active { color: var(--gold); }
+  .step.done { color: var(--text-muted); }
+  .step-num {
+    width: 24px; height: 24px;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+  }
+  .step.active .step-num { background: var(--gold); color: var(--dark); border-color: var(--gold); }
+  .step-divider { width: 32px; height: 1px; background: var(--border); }
+
+  /* PANELS */
+  .panel {
+    background: var(--dark2);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 40px;
+    margin-bottom: 24px;
+  }
+  .panel-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 400;
+    margin-bottom: 8px;
+  }
+  .panel-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 28px;
+  }
+
+  /* UPLOAD ZONE */
+  .upload-zone {
+    border: 1px dashed var(--border);
+    border-radius: 2px;
+    padding: 60px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--gold);
+    background: rgba(201,168,76,0.03);
+  }
+  .upload-zone input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .upload-icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+    opacity: 0.4;
+  }
+  .upload-zone h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 400;
+    margin-bottom: 6px;
+  }
+  .upload-zone p {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .upload-preview {
+    width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+    border-radius: 2px;
+    display: none;
+  }
+
+  /* GRANITE SELECTOR */
+  .granite-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  .granite-card {
+    cursor: pointer;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .granite-card:hover { border-color: var(--gold-light); transform: translateY(-2px); }
+  .granite-card.selected { border-color: var(--gold); }
+  .granite-card.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 6px; right: 6px;
+    background: var(--gold);
+    color: var(--dark);
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: bold;
+  }
+  .granite-swatch {
+    height: 80px;
+    background-size: cover;
+    background-position: center;
+  }
+  .granite-info {
+    padding: 10px 12px;
+    background: var(--dark3);
+  }
+  .granite-name {
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+  .granite-origin {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  /* PROMPT TEXTAREA */
+  .prompt-area {
+    width: 100%;
+    background: var(--dark3);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 16px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    resize: vertical;
+    min-height: 100px;
+    transition: border-color 0.2s;
+  }
+  .prompt-area:focus { outline: none; border-color: var(--gold); }
+
+  /* BUTTON */
+  .btn-primary {
+    background: var(--gold);
+    color: var(--dark);
+    border: none;
+    padding: 16px 48px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 1px;
+    width: 100%;
+    margin-top: 24px;
+  }
+  .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    padding: 12px 32px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 1px;
+  }
+  .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* RESULT */
+  .result-area { display: none; }
+  .result-image-wrap {
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .result-image-wrap img {
+    width: 100%;
+    display: block;
+  }
+  .result-badge {
+    position: absolute;
+    top: 16px; left: 16px;
+    background: rgba(15,15,15,0.85);
+    border: 1px solid var(--gold);
+    padding: 6px 14px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    backdrop-filter: blur(4px);
+  }
+
+  .result-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .result-actions .btn-secondary { flex: 1; }
+
+  /* LOADING */
+  .loading-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15,15,15,0.92);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 24px;
+    backdrop-filter: blur(4px);
+  }
+  .loading-overlay.active { display: flex; }
+  .spinner {
+    width: 48px; height: 48px;
+    border: 1px solid var(--border);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+  }
+  .loading-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    opacity: 0.6;
+  }
+
+  /* ERROR */
+  .error-box {
+    display: none;
+    background: rgba(200,50,50,0.1);
+    border: 1px solid rgba(200,50,50,0.3);
+    border-radius: 2px;
+    padding: 16px 20px;
+    font-size: 13px;
+    color: #FF8080;
+    margin-top: 16px;
+  }
+
+  /* API KEY INPUT */
+  .api-input-wrap {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .api-input {
+    flex: 1;
+    background: var(--dark3);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    transition: border-color 0.2s;
+  }
+  .api-input:focus { outline: none; border-color: var(--gold); }
+  .api-status {
+    font-size: 12px;
+    margin-top: 8px;
+  }
+  .api-status.ok { color: #6BCB77; }
+  .api-status.err { color: #FF6B6B; }
+
+  /* CONTACT CTA */
+  .cta-bar {
+    text-align: center;
+    padding: 40px;
+    border: 1px solid var(--border);
+    background: linear-gradient(135deg, var(--dark2), var(--dark3));
+    border-radius: 2px;
+    margin-top: 32px;
+  }
+  .cta-bar h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 300;
+    margin-bottom: 8px;
+  }
+  .cta-bar p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+  .cta-bar a {
+    display: inline-block;
+    background: var(--gold);
+    color: var(--dark);
+    padding: 14px 40px;
+    text-decoration: none;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+  .cta-bar a:hover { background: var(--gold-light); }
+
+  @media (max-width: 600px) {
+    .panel { padding: 24px 20px; }
+    .granite-grid { grid-template-columns: repeat(2, 1fr); }
+    .steps { gap: 4px; }
+    .step span:not(.step-num) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-text">Kol Marble & Granite</div>
+  <h1>Kitchen <span>Visualizer</span></h1>
+  <p class="subtitle">See your dream countertop before installation</p>
+</header>
+
+<div class="container">
+
+  <!-- STEPS -->
+  <div class="steps">
+    <div class="step active" id="step1">
+      <span class="step-num">1</span>
+      <span>Upload Photo</span>
+    </div>
+    <div class="step-divider"></div>
+    <div class="step" id="step2">
+      <span class="step-num">2</span>
+      <span>Choose Stone</span>
+    </div>
+    <div class="step-divider"></div>
+    <div class="step" id="step3">
+      <span class="step-num">3</span>
+      <span>Visualize</span>
+    </div>
+  </div>
+
+  <!-- STEP 1: UPLOAD -->
+  <div class="panel" id="panel-upload">
+    <div class="panel-title">Upload Your Kitchen Photo</div>
+    <p class="panel-desc">Upload a clear photo of your kitchen. The AI will detect countertop areas and apply your chosen stone.</p>
+    <input type="file" id="photoInput" accept="image/*" style="display:none">
+    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('photoInput').click()">
+      <div id="uploadPlaceholder">
+        <div class="upload-icon">⬆</div>
+        <h3>Click or Drop your photo here</h3>
+        <p>JPG, PNG or WEBP · Max 10MB</p>
+      </div>
+    </div>
+    <img id="uploadPreview" class="upload-preview" alt="Preview" style="display:none; width:100%; max-height:400px; object-fit:contain; margin-top:16px; border-radius:4px;">
+  </div>
+
+  <!-- STEP 2: GRANITE SELECTION -->
+  <div class="panel" id="panel-granite">
+    <div class="panel-title">Choose Your Stone</div>
+    <p class="panel-desc">Select a stone from our collection. This will be applied to your countertops.</p>
+    <div class="granite-grid" id="graniteGrid">
+      <!-- filled by JS -->
+    </div>
+  </div>
+
+  <!-- STEP 3: API KEY + GENERATE -->
+  <div class="panel" id="panel-generate">
+    <div class="panel-title">Generate Visualization</div>
+    <p class="panel-desc">Enter your OpenAI API key to generate the visualization. Your key is never stored.</p>
+
+    <div class="api-input-wrap">
+      <input type="password" class="api-input" id="apiKey" placeholder="sk-proj-...">
+      <button class="btn-secondary" onclick="testApiKey()">Test Key</button>
+    </div>
+    <div class="api-status" id="apiStatus"></div>
+
+    <div style="margin-top:20px;">
+      <label style="font-size:12px; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase; display:block; margin-bottom:8px;">Additional Notes (Optional)</label>
+      <textarea class="prompt-area" id="extraPrompt" placeholder="e.g. keep the same cabinets, white subway tile backsplash..."></textarea>
+    </div>
+
+    <button class="btn-primary" id="generateBtn" onclick="generateVisualization()">
+      Generate Visualization
+    </button>
+    <div class="error-box" id="errorBox"></div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="panel result-area" id="panel-result">
+    <div class="panel-title">Your Visualization</div>
+    <p class="panel-desc">AI-generated preview of your kitchen with the selected stone.</p>
+    <div class="result-image-wrap">
+      <img id="resultImage" src="" alt="Visualization result">
+      <div class="result-badge">AI Visualization</div>
+    </div>
+    <div class="result-actions">
+      <button class="btn-secondary" onclick="downloadResult()">⬇ Download Image</button>
+      <button class="btn-secondary" onclick="resetAll()">↺ Start Over</button>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-bar">
+    <h3>Love what you see?</h3>
+    <p>Get a free estimate from our stone specialists today</p>
+    <a href="https://kolgranite.com/contact">Schedule Free Consultation</a>
+  </div>
+
+</div>
+
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Creating your visualization...</div>
+  <div class="loading-sub">This may take 20–40 seconds</div>
+</div>
+
+<script>
+// ============================================================
+// GRANITE COLLECTION — Add your real products here
+// ============================================================
+const granites = [
+  { id: 'calacatta-gold',    name: 'Calacatta Gold',    origin: 'Italy',         color: '#E8E0D0', veins: '#C4A882', css: 'linear-gradient(135deg,#EDE8DE 0%,#D4C9B5 40%,#C9B99A 100%)' },
+  { id: 'titanium-gold',     name: 'Titanium Gold',     origin: 'Brazil',        color: '#8B7355', veins: '#C9A84C', css: 'linear-gradient(135deg,#7A6548 0%,#9B8560 40%,#B8956A 100%)' },
+  { id: 'black-galaxy',      name: 'Black Galaxy',      origin: 'India',         color: '#1A1A1A', veins: '#FFD700', css: 'radial-gradient(ellipse at 30% 40%,#2A2A2A,#0A0A0A),radial-gradient(circle at 60% 60%,#1E1E1E,#111)' },
+  { id: 'white-ice',         name: 'White Ice',         origin: 'Norway',        color: '#F5F2EE', veins: '#C8C0B8', css: 'linear-gradient(160deg,#F8F5F2 0%,#EDE9E5 50%,#E0DBD5 100%)' },
+  { id: 'emerald-pearl',     name: 'Emerald Pearl',     origin: 'Norway',        color: '#2D4A3E', veins: '#5A8C7A', css: 'linear-gradient(135deg,#1E3830 0%,#2D5244 40%,#3A6B58 100%)' },
+  { id: 'azul-bahia',        name: 'Azul Bahia',        origin: 'Brazil',        color: '#1A3A6B', veins: '#4A7AB8', css: 'linear-gradient(135deg,#122855 0%,#1E3F7A 40%,#2A5595 100%)' },
+  { id: 'kashmir-white',     name: 'Kashmir White',     origin: 'India',         color: '#E8E2DA', veins: '#B8A898', css: 'linear-gradient(145deg,#EDE8E2 0%,#DDD5CA 40%,#CEC4B8 100%)' },
+  { id: 'absolute-black',    name: 'Absolute Black',    origin: 'South Africa',  color: '#0A0A0A', veins: '#1A1A1A', css: 'linear-gradient(135deg,#080808 0%,#121212 50%,#0F0F0F 100%)' },
+  { id: 'rosso-levanto',     name: 'Rosso Levanto',     origin: 'Turkey',        color: '#8B1A1A', veins: '#C44A3A', css: 'linear-gradient(135deg,#6B1212 0%,#8B2020 40%,#A83030 100%)' },
+  { id: 'verde-labrador',    name: 'Verde Labrador',    origin: 'Canada',        color: '#1A3A2A', veins: '#3A7A5A', css: 'linear-gradient(135deg,#122818 0%,#1E4228 40%,#2A5838 100%)' },
+  { id: 'statuario',         name: 'Statuario Marble',  origin: 'Italy',         color: '#FAFAF8', veins: '#B0B0A8', css: 'linear-gradient(155deg,#FAFAF8 0%,#F0EFEC 50%,#E5E4E0 100%)' },
+  { id: 'nero-marquina',     name: 'Nero Marquina',     origin: 'Spain',         color: '#111111', veins: '#FFFFFF', css: 'linear-gradient(135deg,#0A0A0A 0%,#181818 50%,#0F0F0F 100%)' },
+];
+
+let selectedGranite = null;
+let uploadedImageBase64 = null;
+let resultImageUrl = null;
+
+function buildGraniteGrid() {
+  const grid = document.getElementById('graniteGrid');
+  grid.innerHTML = granites.map(g => `<div class="granite-card" id="gcard-${g.id}" onclick="selectGranite('${g.id}')"><div class="granite-swatch" style="background:${g.css}"></div><div class="granite-info"><div class="granite-name">${g.name}</div><div class="granite-origin">${g.origin}</div></div></div>`).join('');
+}
+function selectGranite(id) {
+  document.querySelectorAll('.granite-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('gcard-' + id).classList.add('selected');
+  selectedGranite = granites.find(g => g.id === id);
+  setStep(3);
+}
+const uploadZone = document.getElementById('uploadZone');
+const photoInput = document.getElementById('photoInput');
+const uploadPreview = document.getElementById('uploadPreview');
+const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+photoInput.addEventListener('change', e => handleFile(e.target.files[0]));
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('dragover'); handleFile(e.dataTransfer.files[0]); });
+function handleFile(file) {
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { alert('Please upload an image file'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const dataUrl = e.target.result;
+    uploadedImageBase64 = dataUrl.split(',')[1];
+    uploadPreview.src = dataUrl;
+    uploadPreview.style.display = 'block';
+    uploadPlaceholder.style.display = 'none';
+    uploadZone.style.padding = '12px';
+    setStep(2);
+  };
+  reader.readAsDataURL.bind(reader);
+  reader.readAsDataURL(file);
+}
+function setStep(n) {
+  for (let i = 1; i <= 3; i++) {
+    const s = document.getElementById('step' + i);
+    s.className = 'step ' + (i < n ? 'done' : i === n ? 'active' : '');
+  }
+}
+async function testApiKey() {
+  const key = document.getElementById('apiKey').value.trim();
+  const status = document.getElementById('apiStatus');
+  if (!key) { status.textContent = 'Please enter an API key'; status.className = 'api-status err'; return; }
+  status.textContent = 'Testing...'; status.className = 'api-status';
+  try {
+    const r = await fetch('https://api.openai.com/v1/models', { headers: { 'Authorization': 'Bearer ' + key } });
+    if (r.ok) { status.textContent = '✓ API key is valid'; status.className = 'api-status ok'; }
+    else { status.textContent = '┗ Invalid API key'; status.className = 'api-status err'; }
+  } catch { status.textContent = '┗ Connection error'; status.className = 'api-status err'; }
+}
+async function generateVisualization() {
+  const apiKey = document.getElementById('apiKey').value.trim();
+  const extraPrompt = document.getElementById('extraPrompt').value.trim();
+  document.getElementById('errorBox').style.display = 'none';
+  if (!uploadedImageBase64) { showError('Please upload a kitchen photo first.'); return; }
+  if (!selectedGranite) { showError('Please select a stone first.'); return; }
+  if (!apiKey) { showError('Please enter your OpenAI API key.'); return; }
+  document.getElementById('loadingOverlay').classList.add('active');
+  document.getElementById('generateBtn').disabled = true;
+  try {
+    const descR = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST', headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'gpt-4o', max_tokens: 500, messages: [{ role: 'user', content: [{ type: 'image_url', image_url: { url: 'data:image/jpeg;base64,' + uploadedImageBase64, detail: 'high' } }, { type: 'text', text: 'Describe this kitchen in detail: cabinets, appliances, flooring, walls, lighting, colors.' }] }] })
+    });
+    const descD = await descR.json();
+    if (descD.error) throw new Error(descD.error.message);
+    const desc = descD.choices[0].message.content;
+    const genR = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST', headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'dall-e-3', prompt: `Photorealistic kitchen. ${desc} Countertops are ${selectedGranite.name} stone from ${selectedGranite.origin}. ${extraPrompt} High-end photorealistic kitchen photography.`, size: '1792x1024', quality: 'hd', response_format: 'b64_json', n: 1 })
+    });
+    const genD = await genR.json();
+    if (genD.error) throw new Error(genD.error.message);
+    showResult('data:image/png;base64,' + genD.data[0].b64_json);
+  } catch (err) {
+    document.getElementById('loadingOverlay').classList.remove('active');
+    document.getElementById('generateBtn').disabled = false;
+    showError('Error: ' + err.message);
+  }
+}
+function showResult(imageData) {
+  resultImageUrl = imageData;
+  document.getElementById('resultImage').src = imageData;
+  document.getElementById('panel-result').style.display = 'block';
+  document.getElementById('loadingOverlay').classList.remove('active');
+  document.getElementById('generateBtn').disabled = false;
+  document.getElementById('panel-result').scrollIntoView({ behavior: 'smooth' });
+}
+function showError(msg) {
+  const box = document.getElementById('errorBox');
+  box.textContent = msg;
+  box.style.display = 'block';
+}
+function downloadResult() {
+  if (!resultImageUrl) return;
+  const a = document.createElement('a');
+  a.href = resultImageUrl;
+  a.download = 'kol-granite-visualization.png';
+  a.click();
+}
+function resetAll() {
+  uploadedImageBase64 = null; selectedGranite = null; resultImageUrl = null;
+  uploadPreview.style.display = 'none'; uploadPlaceholder.style.display = 'block';
+  document.getElementById('panel-result').style.display = 'none';
+  document.querySelectorAll('.granite-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('apiStatus').textContent = '';
+  document.getElementById('errorBox').style.display = 'none';
+  document.getElementById('extraPrompt').value = '';
+  setStep(1); window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+buildGraniteGrid();
+</script>
+</body>
+</html>
